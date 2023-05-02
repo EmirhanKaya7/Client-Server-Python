@@ -4,7 +4,7 @@ from typing import Tuple, Dict, List, Union, Any
 
 
 class ClientController:
-    def __init__(self, host: str, port: int, name: str) -> None:
+    def __init__(self, host: str, port: int, name: str, password:str) -> None:
         """
         Initialize client controller
         :param host: Host to connect
@@ -15,6 +15,7 @@ class ClientController:
         self.host: str = host
         self.port: int = port
         self.name: str = name
+        self.password: str = password
 
         self.is_terminated: bool = False
 

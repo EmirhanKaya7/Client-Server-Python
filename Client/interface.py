@@ -1,6 +1,6 @@
 import json
 from threading import Thread
-from tkinter import Tk, Label, Entry, Button, messagebox, Text
+from tkinter import Tk, Label, Entry, Button, messagebox, Text, Radiobutton, StringVar
 from typing import Union, Dict, Any
 
 from controller import ClientController
@@ -11,8 +11,8 @@ class ClientInterface:
         self.controller: Union[ClientController, None] = None
 
         self.root = Tk()
-        self.root.title("Quiz Game Client")
-        self.root.geometry("600x400")
+        self.root.title("Ali-Emirhan Client")
+        self.root.geometry("800x600")
 
         self.root.resizable(False, False)
         self.log_count = 1
@@ -26,6 +26,67 @@ class ClientInterface:
         self.controller.close()
 
     def start_client_layout(self) -> None:
+        """
+        Set start client layout
+        :return:
+        """
+        # write welcome message
+        welcome_message = Label(self.root, text="Welcome to the Enrollment Client", font=("Arial", 20))
+        welcome_message.place(relx=0.5, rely=0.1, anchor="center")
+
+        # get host and port number from user under the welcome message
+        host_label = Label(self.root, text="Host Address:", font=("Arial", 12))
+        host_label.place(relx=0.25, rely=0.2, anchor="center")
+
+        self.host_entry = Entry(self.root, width=38)
+        self.host_entry.insert(0, "localhost")
+        self.host_entry.place(relx=0.65, rely=0.2, anchor="center")
+
+
+        port_number_label = Label(self.root, text="Port Number: ", font=("Arial", 12))
+        port_number_label.place(relx=0.25, rely=0.3, anchor="center")
+
+        self.port_number_entry = Entry(self.root, width=38)
+        self.port_number_entry.insert(0, "5000")
+        self.port_number_entry.place(relx=0.65, rely=0.3, anchor="center")
+
+        self.name_label = Label(self.root, text="Name:", font=("Arial", 12))
+        self.name_label.place(relx=0.25, rely=0.4, anchor="e")
+
+        self.name_entry = Entry(self.root, width=38)
+        self.name_entry.place(relx=0.65, rely=0.4, anchor="center")
+
+        self.pass_label = Label(self.root, text="Password:", font=("Arial", 12))
+        self.pass_label.place(relx=0.23, rely=0.5, anchor="center")
+
+        self.pass_entry = Entry(self.root, width=38)
+        self.pass_entry.place(relx=0.65, rely=0.5, anchor="center")
+        # create a label for the radio button group
+        self.group_label = Label(self.root, text="Choose an option:", font=("Arial", 12))
+        self.group_label.place(relx=0.21, rely=0.7, anchor="center")
+
+        # create a variable to store the selected option
+        self.selected_option = StringVar()
+
+        # create three radio buttons with the options
+        self.option1_button = Radiobutton(self.root, text="Option 1", font=("Arial", 12), variable=self.selected_option, value="option1")
+        self.option1_button.place(relx=0.5, rely=0.7, anchor="center")
+
+        self.option2_button = Radiobutton(self.root, text="Option 2", font=("Arial", 12), variable=self.selected_option, value="option2")
+        self.option2_button.place(relx=0.65, rely=0.7, anchor="center")
+
+        self.option3_button = Radiobutton(self.root, text="Option 3", font=("Arial", 12), variable=self.selected_option, value="option3")
+        self.option3_button.place(relx=0.8, rely=0.7, anchor="center")
+        self.selected_option.set("option1")
+
+        
+
+        # start client button
+        self.start_client_button = Button(self.root, text="Enrollment", font=("Arial", 12),
+                                          command=self.start_client)
+        self.start_client_button.place(relx=0.5, rely=0.8, anchor="center")
+
+    def auth_layout(self) -> None:
         """
         Set start client layout
         :return:
@@ -60,6 +121,7 @@ class ClientInterface:
         self.start_client_button = Button(self.root, text="Start Client", font=("Arial", 12),
                                           command=self.start_client)
         self.start_client_button.place(relx=0.5, rely=0.8, anchor="center")
+
 
     def start_client(self):
         """
@@ -125,28 +187,24 @@ class ClientInterface:
         self.root.geometry("750x500")
 
         # write welcome message
-        welcome_message = Label(self.root, text="Quiz Game Player", font=("Arial", 20))
+        welcome_message = Label(self.root, text="Enrollment Process", font=("Arial", 20))
         welcome_message.place(relx=0.5, rely=0.15, anchor="center")
 
         # set rich text box for see logs
-        scores_label = Label(self.root, text="Scores:")
-        scores_label.place(relx=0.375, rely=0.1975, relwidth=0.4)
+        log_label = Label(self.root, text="Process Log:")
+        log_label.place(relx=0.375, rely=0.1975, relwidth=0.4)
 
-        self.scores = Text(self.root, width=80, height=20)
-        self.scores.place(relx=0.55, rely=0.25, relwidth=0.4, relheight=0.5)
+        self.log = Text(self.root, width=80, height=20)
+        self.log.place(relx=0.55, rely=0.25, relwidth=0.4, relheight=0.5)
 
-        self.scores.insert('end', f'Scores will be shown after the first question is answered')
-        self.scores.config(state='disabled')
-
-        # show waiting other players message
-        self.waiting_message = Label(self.root, text="Waiting for other players", font=("Arial", 12))
-        self.waiting_message.place(relx=0.275, rely=0.5, anchor="center")
+        self.log.insert('end', f'Scores will be shown after the first question is answered')
+        self.log.config(state='disabled')
 
         # start game
-        self.game_thread = Thread(target=self.game)
-        self.game_thread.start()
+        self.enrollment_thread = Thread(target=self.enrollment)
+        self.enrollment_thread.start()
 
-    def game(self):
+    def enrollment(self):
         """
         Start game
         :return:
