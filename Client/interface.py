@@ -2,7 +2,7 @@ import json
 from threading import Thread
 from tkinter import Tk, Label, Entry, Button, messagebox, Text, Radiobutton, StringVar
 from typing import Union, Dict, Any
-
+import hashlib
 from controller import ClientController
 
 
@@ -17,13 +17,41 @@ class ClientInterface:
         self.root.resizable(False, False)
         self.log_count = 1
         self.is_end = False
+        self.readkeys()
+        print(self.sign_pub)
         self.start_client_layout()
 
         self.root.mainloop()
         self.connection_thread.join()
         print("Client closed")
-        self.game_thread.join()
+        self.enrollment_thread.join()
         self.controller.close()
+
+
+
+    def readkeys(self) ->None:
+        """
+        Read questions from file
+        :return: None
+        """
+        temp = ""
+        with open('server_sign_verify_pub.txt', 'r') as file:
+            # read question and answer from file line by line and add them to questions dictionary
+            lines = file.readlines()
+            for line in lines:
+                temp += line
+        self.sign_pub = temp
+        file.close()  # close file
+        temp = ""
+        with open('server_enc_dec_pub.txt', 'r') as file:
+            # read question and answer from file line by line and add them to questions dictionary
+            lines = file.readlines()
+            for line in lines:
+                temp += line
+        self.RSA_pub = temp
+        file.close()  # close file
+
+
 
     def start_client_layout(self) -> None:
         """
@@ -140,9 +168,11 @@ class ClientInterface:
             self.host = self.host_entry.get()
             self.port = int(self.port_number_entry.get())
             self.name = self.name_entry.get()
+            self.password = self.pass_entry.get()
+            self.channel = self.selected_option.get()
 
             # create controller and start client
-            self.controller = ClientController(self.host, self.port, self.name)
+            self.controller = ClientController(self.host, self.port, self.name,self.password,self.channel)
             message = self.controller.connect()
 
             # raise error if connection failed
@@ -216,10 +246,16 @@ class ClientInterface:
 
         # start game
         while not self.controller.is_terminated:
-
-            self.waiting_message.config(text="Waiting for other players enter the game")
+            hash_pass = hashlib.sha3_512()
+            byte_pass = bytes(self.password, 'utf-8')
+            hash_pass.update(byte_pass)
+            byte_name = bytes(self.name,'utf-8')
+            byte_channel = bytes(self.channel,'utf-8')
+            message = hash_pass.digest() + byte_name + byte_channel
+            self.controller.send_message_bytes(message)
             is_start = self.controller.receive_message()
-
+            if is_start == "get":
+                print("Success")
             if is_start == "start":
                 # remove waiting message and set question layout
                 self.scores.config(state='normal')

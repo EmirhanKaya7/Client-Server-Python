@@ -140,9 +140,6 @@ class ServiceInterface:
         :return: None
         """
 
-        # read questions from file
-        self.controller.read_questions()
-        self.add_log("Questions read from file")
 
         # check connections in thread
         self.connection_thread = Thread(target=self.check_connections)
@@ -157,45 +154,18 @@ class ServiceInterface:
             self.start_game_button.config(state="normal")
 
             # wait for players
-            self.controller.wait_clients()
+            
 
             self.add_log("All players connected. Game started\n")
 
             # send starting message to players
-            self.controller.send_message_to_clients('start')
+            self.controller.send_message_to_clients('get')
 
             # give delay for players
             time.sleep(1)
 
             # send questions to players
-            for i in range(self.question_count):
-
-                if len(self.controller.players) <= 1:
-                    break
-
-                answer = self.ask_question(i)
-                self.get_answers(answer)
-                self.send_results(answer)
-
-                if self.controller._is_terminated:
-                    self.connection_thread.join()
-                    return None
-
-            # start new game
-            MessageBox(title="Game Finished", command=self.terminate_game,
-                       message="Game finished. Do you want to terminate the server?")
-
-            if self.controller._is_terminated:
-                self.controller.send_message_to_clients('terminate')
-                self.connection_thread.join()
-                try:
-                    self.add_log("Server terminated")
-                except:
-                    pass
-            else:
-                self.controller.send_message_to_clients('restart')
-                self.add_log("New game started")
-
+           
         return None
 
     def check_connections(self):

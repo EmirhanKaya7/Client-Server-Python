@@ -4,7 +4,7 @@ from typing import Tuple, Dict, List, Union, Any
 
 
 class ClientController:
-    def __init__(self, host: str, port: int, name: str, password:str) -> None:
+    def __init__(self, host: str, port: int, name: str, password:str, channel:str) -> None:
         """
         Initialize client controller
         :param host: Host to connect
@@ -16,6 +16,8 @@ class ClientController:
         self.port: int = port
         self.name: str = name
         self.password: str = password
+        self.channel: str = channel
+
 
         self.is_terminated: bool = False
 
@@ -29,7 +31,7 @@ class ClientController:
             self.server.connect((self.host, self.port))
 
             # send name to server
-            self.server.send(self.name.encode())
+            self.server.send("enrollment")
 
             # receive message from server
             message = self.server.recv(1024).decode()
@@ -72,6 +74,14 @@ class ClientController:
         :return: None
         """
         self.server.send(message.encode())
+
+    def send_message_bytes(self, message: bytes) -> None:
+        """
+        Send message to server
+        :param message: message
+        :return: None
+        """
+        self.server.send(message)
 
     @property
     def is_connected(self) -> bool:
