@@ -48,3 +48,16 @@ def receive():
         thread.start()
 print("Server is listenning...")
 receive()
+
+def read_questions(self) -> None:
+        """
+        Read questions from file
+        :return: None
+        """
+        with open('questions.txt', 'r') as file:
+            # read question and answer from file line by line and add them to questions dictionary
+            lines = file.readlines()
+            for line in range(0, len(lines), 2):
+                self.questions[lines[line].strip()] = int(lines[line + 1].strip())
+
+        file.close()  # close file
