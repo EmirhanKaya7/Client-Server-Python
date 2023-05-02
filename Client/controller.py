@@ -31,7 +31,7 @@ class ClientController:
             self.server.connect((self.host, self.port))
 
             # send name to server
-            self.server.send("enrollment")
+            self.server.send(self.name.encode())
 
             # receive message from server
             message = self.server.recv(1024).decode()
