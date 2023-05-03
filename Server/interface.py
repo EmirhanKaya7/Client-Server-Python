@@ -153,18 +153,8 @@ class ServiceInterface:
             # activate start game button
             self.start_game_button.config(state="normal")
 
-            # wait for players
-            
-
-            self.add_log("All players connected. Game started\n")
-
-            # send starting message to players
-            self.controller.send_message_to_clients('get')
-
-            # give delay for players
-            time.sleep(1)
-
-            # send questions to players
+            # accept clients
+            self.controller.accept_clients()
            
         return None
 

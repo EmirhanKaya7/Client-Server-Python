@@ -1,5 +1,7 @@
 import json
 from threading import Thread
+from time import sleep
+import rsa
 from tkinter import Tk, Label, Entry, Button, messagebox, Text, Radiobutton, StringVar
 from typing import Union, Dict, Any
 import hashlib
@@ -18,7 +20,6 @@ class ClientInterface:
         self.log_count = 1
         self.is_end = False
         self.readkeys()
-        print(self.sign_pub)
         self.start_client_layout()
 
         self.root.mainloop()
@@ -173,7 +174,8 @@ class ClientInterface:
 
             # create controller and start client
             self.controller = ClientController(self.host, self.port, self.name,self.password,self.channel)
-            message = self.controller.connect()
+            message = self.controller.connect_with_enrollment()
+            print(message)
 
             # raise error if connection failed
             if message != "Connected":
@@ -249,10 +251,13 @@ class ClientInterface:
             hash_pass = hashlib.sha3_512()
             byte_pass = bytes(self.password, 'utf-8')
             hash_pass.update(byte_pass)
-            byte_name = bytes(self.name,'utf-8')
-            byte_channel = bytes(self.channel,'utf-8')
+            byte_name = bytes(":"+self.name,'utf-8')
+            byte_channel = bytes(":"+self.channel,'utf-8')
             message = hash_pass.digest() + byte_name + byte_channel
-            self.controller.send_message_bytes(message)
+            new_message =rsa.encrypt(message,self.RSA_pub)
+            self.controller.send_message_bytes(new_message)
+            sleep(1)
+            
             is_start = self.controller.receive_message()
             if is_start == "get":
                 print("Success")
@@ -263,7 +268,7 @@ class ClientInterface:
                 self.scores.insert('end', f'Scores will be shown after the first question is answered')
                 self.scores.config(state='disabled')
 
-                self.waiting_message.config(text="")
+                
                 self.question_label = Label(self.root)
                 self.question_label.place(relx=0.25, rely=0.1975, anchor="center")
 
@@ -332,7 +337,7 @@ class ClientInterface:
         self.controller.send_message(answer)
 
         # set waiting message
-        self.waiting_message.config(text="Waiting for other players answer")
+        
 
     def show_results(self, response: Dict[str, Any]):
         """
@@ -358,7 +363,7 @@ class ClientInterface:
             if not self.controller.is_connected:
                 messagebox.showerror("Error", "Connection is lost")
                 self.is_end = True
-                self.waiting_message.config(text="Connection lost")
+                
                 self.question_label.destroy()
                 self.answer_button.destroy()
                 self.answer_entry.destroy()
@@ -369,12 +374,12 @@ class ClientInterface:
         Wait restart message from server
         :return:
         """
-        self.waiting_message.config(text="Waits server message")
+        
         message = self.controller.receive_message()
 
         if message != "restart":
             self.controller.is_terminated = True
-            self.waiting_message.config(text="Game is end")
+            
 
             # add close button
             self.close_button = Button(self.root, text="Close", command=self.root.destroy)

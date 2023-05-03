@@ -46,7 +46,32 @@ class ClientController:
                 return 'Connection timeout'
             else:
                 return 'Unknown error'
+    def connect_with_enrollment(self) -> str:
+        """
+        Connect to server
+        :return: True if connected, False otherwise
+        """
+        try:
+            self.server = socket(AF_INET, SOCK_STREAM)
+            self.server.connect((self.host, self.port))
 
+            # send name to server
+            self.server.send("Enrollment".encode())
+
+            # receive message from server
+            message = self.server.recv(1024).decode()
+
+            # if message is connected then return
+            return message
+
+        except Exception as e:
+            if type(e) == ConnectionRefusedError:  # if connection refused
+                return 'Connection refused'
+            elif type(e) == TimeoutError:          # if connection timeout
+                return 'Connection timeout'
+            else:
+                return 'Unknown error'
+            
     def close(self) -> None:
         """
         Close server

@@ -26,6 +26,9 @@ class NewClient:
         :return: received message
         """
         return self.client.recv(1024).decode()
+    
+    def receive_bytes(self) -> bytes:
+        return self.client.recv(1024)
 
     def close(self) -> None:
         """
