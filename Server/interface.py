@@ -154,7 +154,7 @@ class ServiceInterface:
             self.start_game_button.config(state="normal")
 
             # wait for players
-            
+            self.controller.wait_clients()
 
             self.add_log("All players connected. Game started\n")
 
@@ -164,7 +164,6 @@ class ServiceInterface:
             # give delay for players
             time.sleep(1)
 
-            # send questions to players
            
         return None
 
@@ -179,35 +178,9 @@ class ServiceInterface:
 
         return None
 
-    def ask_question(self, question_number: int = 0) -> int:
-        """
-        Ask question to all players
-        :return: answer
-        """
-        question, answer = self.controller.select_question()
-        self.add_log(f'Question {question_number + 1}: {question}, Answer: {answer}')
+    
 
-        # send question to all players
-        self.controller.send_message_to_clients(question)
-        self.add_log("Question sent to all players")
-
-        return answer
-
-    def get_answers(self, correct_answer: int) -> None:
-        """
-        Get answers from all players
-        :param correct_answer: correct answer of the question
-        :return: None
-        """
-        # get answers from all players
-        self.controller.wait_for_answer_from_clients()
-        if not self.controller._is_terminated:
-            self.add_log("Answers received from all players")
-
-            # compare answers
-            self.controller.compare_answers(correct_answer)
-            self.add_log("Answers compared")
-
+   
     def send_results(self, correct_answer: int) -> None:
         """
         Send results to all players

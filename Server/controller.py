@@ -50,48 +50,45 @@ class ServiceController:
         :param layout: layout of the game
         """
 
-        self.layout.add_log('Waiting for clients to connect...')
-       
+        self.layout.add_log('Waiting for client to connect...')
 
         # set timeout for server
         self.server.settimeout(1)
 
-        # wait for clients to connect
-        while not self._is_started and not self._is_terminated:
+        # wait for a client to connect
+        try:
+            client, address = self.server.accept()
+        except timeout:
+            pass
 
-            # check if server stop waiting for clients
-            try:
-                client, address = self.server.accept()
-            except timeout:
-                continue
+        name = client.recv(1024).decode()
 
-            name = client.recv(1024).decode()
+        # send message to client if name is empty
+        if name == '':
+            self.layout.add_log(f'Client {address} connected with empty name')
+            client.send('Name cannot be empty'.encode())
+            client.close()
+            return
 
-            # send message to client if name is empty
-            if name == '':
-                self.layout.add_log(f'Client {address} connected with empty name')
-                client.send('Name cannot be empty'.encode())
-                client.close()
-                continue
+        # send message to client if name is already taken
+        if name in self.clients:
+            self.layout.add_log(f'Client {address} connected with taken name')
+            client.send('Name already exists'.encode())
+            client.close()
+            return
 
-            # send message to client if name is already taken
-            if name in self.clients:
-                self.layout.add_log(f'Client {address} connected with taken name')
-                client.send('Name already exists'.encode())
-                client.close()
-                continue
+        # add client to players dictionary
+        newClient = NewClient(name=name, client=client, address=address)
+        self.clients[name] = newClient
 
-            # add client to players dictionary
-            newClient = NewClient(name=name, client=client, address=address)
-            self.clients[name] = newClient
+        # send message to client
+        newClient.send('Connected')
 
-            # send message to client
-            newClient.send('Connected')
-
-            self.layout.add_log(f'Client {address} connected with name {name}')
+        self.layout.add_log(f'Client {address} connected with name {name}')
 
         # remove timeout from server
         self.server.settimeout(None)
+
 
     def read_questions(self) -> None:
         """
@@ -164,8 +161,6 @@ class ServiceController:
         :return: None
         """
 
-    
-
         # send results to clients
         for clients in self.clients:
             # create result message
@@ -207,10 +202,6 @@ class ServiceController:
                 self.clients[clients].client.close()
                 
                 
-
-        
-        
-        
 
         return None
 

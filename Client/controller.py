@@ -17,8 +17,6 @@ class ClientController:
         self.name: str = name
         self.password: str = password
         self.channel: str = channel
-
-
         self.is_terminated: bool = False
 
     def connect(self) -> str:

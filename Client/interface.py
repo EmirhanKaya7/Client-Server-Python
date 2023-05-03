@@ -18,7 +18,6 @@ class ClientInterface:
         self.log_count = 1
         self.is_end = False
         self.readkeys()
-        print(self.sign_pub)
         self.start_client_layout()
 
         self.root.mainloop()
@@ -170,10 +169,12 @@ class ClientInterface:
             self.name = self.name_entry.get()
             self.password = self.pass_entry.get()
             self.channel = self.selected_option.get()
-
+            
             # create controller and start client
             self.controller = ClientController(self.host, self.port, self.name,self.password,self.channel)
+           
             message = self.controller.connect()
+            #burda hata
 
             # raise error if connection failed
             if message != "Connected":
@@ -243,7 +244,7 @@ class ClientInterface:
         # check server status
         self.connection_thread = Thread(target=self.check_connection)
         self.connection_thread.start()
-
+        
         # start game
         while not self.controller.is_terminated:
             hash_pass = hashlib.sha3_512()
@@ -253,7 +254,9 @@ class ClientInterface:
             byte_channel = bytes(self.channel,'utf-8')
             message = hash_pass.digest() + byte_name + byte_channel
             self.controller.send_message_bytes(message)
+            
             is_start = self.controller.receive_message()
+
             if is_start == "get":
                 print("Success")
             if is_start == "start":
@@ -364,23 +367,6 @@ class ClientInterface:
                 self.answer_entry.destroy()
                 return
 
-    def wait_restart_message(self):
-        """
-        Wait restart message from server
-        :return:
-        """
-        self.waiting_message.config(text="Waits server message")
-        message = self.controller.receive_message()
-
-        if message != "restart":
-            self.controller.is_terminated = True
-            self.waiting_message.config(text="Game is end")
-
-            # add close button
-            self.close_button = Button(self.root, text="Close", command=self.root.destroy)
-            self.close_button.place(relx=0.5, rely=0.9, anchor="center")
-            # break
-
-
+    
 if __name__ == "__main__":
     ClientInterface()
